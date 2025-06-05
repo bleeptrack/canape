@@ -1,0 +1,25 @@
+{
+  "name": "canape",
+  "version": "1.0.0",
+  "description": "an appetizer to try coding and generative art",
+  "main": "server.js",
+  "scripts": {
+    "test": "node server.js",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bleeptrack/canape.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bleeptrack/canape/issues"
+  },
+  "homepage": "https://github.com/bleeptrack/canape#readme",
+  "dependencies": {
+    "codemirror": "^6.0.1",
+    "express": "^5.1.0",
+    "paper": "^0.12.18"
+  }
+}
