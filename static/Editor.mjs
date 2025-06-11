@@ -6,7 +6,7 @@ import {Decoration} from "@codemirror/view"
 
 // Effect to mark a word
 const markWordEffect = StateEffect.define({
-	map: (value, change) => ({word: value.word, from: change.mapPos(value.from), to: change.mapPos(value.to)})
+	map: (value, change) => ({word: value.word, from: change.mapPos(value.from), to: change.mapPos(value.to), tooltip: value.tooltip})
 });
 
 // State field to track marked words
@@ -16,7 +16,12 @@ const markField = StateField.define({
 		marks = marks.map(tr.changes);
 		for (let e of tr.effects) {
 			if (e.is(markWordEffect)) {
-				const mark = Decoration.mark({class: "marked-word"});
+				const mark = Decoration.mark({
+					class: "marked-word",
+					attributes: {
+						title: e.value.tooltip
+					}
+				});
 				marks = marks.update({
 					add: [{from: e.value.from, to: e.value.to, value: mark}]
 				});
@@ -47,6 +52,7 @@ export class Editor extends HTMLElement {
 				.marked-word {
 					background-color: #ffeb3b;
 					border-radius: 2px;
+					cursor: help;
 				}
 			</style>
 			
@@ -102,7 +108,8 @@ export class Editor extends HTMLElement {
 				effects: markWordEffect.of({
 					word: word,
 					from: selection.main.from,
-					to: selection.main.to
+					to: selection.main.to,
+					tooltip: ""
 				})
 			});
 		});
@@ -151,7 +158,8 @@ export class Editor extends HTMLElement {
 					effects: markWordEffect.of({
 						word: match[2] || match[3],
 						from: valueStart,
-						to: valueEnd
+						to: valueEnd,
+						tooltip: info[key]
 					})
 				});
 			}
