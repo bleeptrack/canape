@@ -1,6 +1,31 @@
 import {basicSetup} from "codemirror"
 import {EditorView} from "@codemirror/view"
+import {javascript} from "@codemirror/lang-javascript"
+import {StateEffect, StateField} from "@codemirror/state"
+import {Decoration} from "@codemirror/view"
 
+// Effect to mark a word
+const markWordEffect = StateEffect.define({
+	map: (value, change) => ({word: value.word, from: change.mapPos(value.from), to: change.mapPos(value.to)})
+});
+
+// State field to track marked words
+const markField = StateField.define({
+	create() { return Decoration.none },
+	update(marks, tr) {
+		marks = marks.map(tr.changes);
+		for (let e of tr.effects) {
+			if (e.is(markWordEffect)) {
+				const mark = Decoration.mark({class: "marked-word"});
+				marks = marks.update({
+					add: [{from: e.value.from, to: e.value.to, value: mark}]
+				});
+			}
+		}
+		return marks;
+	},
+	provide: f => EditorView.decorations.from(f)
+});
 
 export class Editor extends HTMLElement {
 	constructor() {
@@ -9,7 +34,6 @@ export class Editor extends HTMLElement {
 
 		const container = document.createElement('template');
 
-		// creating the inner HTML of the editable list element
 		container.innerHTML = `
 			<style>
 				:host {
@@ -20,6 +44,10 @@ export class Editor extends HTMLElement {
 				.cm-editor {
 					height: 100%;
 				}
+				.marked-word {
+					background-color: #ffeb3b;
+					border-radius: 2px;
+				}
 			</style>
 			
 			<div id="content"></div>
@@ -27,6 +55,7 @@ export class Editor extends HTMLElement {
 			<button id="run">Run</button>
 			<input type="text" id="author" />
 			<button id="submit">submit</button>
+			<button id="mark">Mark Word</button>
 			<canvas id="canvas"></canvas>
 		`;
 
@@ -61,6 +90,22 @@ export class Editor extends HTMLElement {
 				alert('Error saving code. Please try again.');
 			});
 		});
+
+		this.shadow.getElementById('mark').addEventListener('click', () => {
+			const selection = this.view.state.selection;
+			if (selection.main.empty) {
+				alert('Please select a word to mark');
+				return;
+			}
+			const word = this.view.state.sliceDoc(selection.main.from, selection.main.to);
+			this.view.dispatch({
+				effects: markWordEffect.of({
+					word: word,
+					from: selection.main.from,
+					to: selection.main.to
+				})
+			});
+		});
 	}
 
 	connectedCallback() {
@@ -68,12 +113,12 @@ export class Editor extends HTMLElement {
 		
 		paper.setup(this.shadow.getElementById('canvas'));
 
-		
 		const code = `new Path.Circle({
 	center: view.center,
 	radius: 50,
 	fillColor: 'orange'
 })
+var size = 3
 `;
 
 		const content = this.shadow.getElementById('content');
@@ -81,13 +126,12 @@ export class Editor extends HTMLElement {
 		this.view = new EditorView({
 			doc: code,
 			parent: content,
-			extensions: [basicSetup]
+			extensions: [
+				basicSetup,
+				javascript(),
+				markField
+			]
 		});
-		console.log(this.view.state.doc.toString());
-		
-		
-		
-		
 	}
 }
 
