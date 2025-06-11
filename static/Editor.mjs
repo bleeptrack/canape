@@ -108,18 +108,13 @@ export class Editor extends HTMLElement {
 		});
 	}
 
-	connectedCallback() {
+	async connectedCallback() {
 		paper.install(window)
 		
 		paper.setup(this.shadow.getElementById('canvas'));
 
-		const code = `new Path.Circle({
-	center: view.center,
-	radius: 50,
-	fillColor: 'orange'
-})
-var size = 3
-`;
+		const { info, code } = await import('./sample-codes/rectangular.js');
+		
 
 		const content = this.shadow.getElementById('content');
 		
@@ -132,6 +127,35 @@ var size = 3
 				markField
 			]
 		});
+
+		// Mark values assigned to keys from the info object
+		const doc = this.view.state.doc.toString();
+		for (const key of Object.keys(info)) {
+			// Look for patterns like key: value or key = value, handling both strings and numbers
+			const regex = new RegExp(`${key}\\s*[:=]\\s*(['"]([^'"]+)['"]|(\\d+))`, 'g');
+			let match;
+			while ((match = regex.exec(doc)) !== null) {
+				let valueStart, valueEnd;
+				if (match[2]) { // String value
+					valueStart = match.index + match[0].indexOf("'") + 1;
+					valueEnd = match.index + match[0].lastIndexOf("'");
+				} else { // Number value
+					valueStart = match.index + match[0].lastIndexOf("=") + 1;
+					valueEnd = match.index + match[0].length;
+				}
+				// Trim whitespace
+				while (doc[valueStart] === ' ') valueStart++;
+				while (doc[valueEnd - 1] === ' ') valueEnd--;
+				
+				this.view.dispatch({
+					effects: markWordEffect.of({
+						word: match[2] || match[3],
+						from: valueStart,
+						to: valueEnd
+					})
+				});
+			}
+		}
 	}
 }
 
