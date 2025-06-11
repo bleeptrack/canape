@@ -1,5 +1,5 @@
 import {basicSetup} from "codemirror"
-import {EditorView} from "@codemirror/view"
+import {EditorView, showTooltip, hoverTooltip} from "@codemirror/view"
 import {javascript} from "@codemirror/lang-javascript"
 import {StateEffect, StateField} from "@codemirror/state"
 import {Decoration} from "@codemirror/view"
@@ -17,10 +17,7 @@ const markField = StateField.define({
 		for (let e of tr.effects) {
 			if (e.is(markWordEffect)) {
 				const mark = Decoration.mark({
-					class: "marked-word",
-					attributes: {
-						title: e.value.tooltip
-					}
+					class: "marked-word"
 				});
 				marks = marks.update({
 					add: [{from: e.value.from, to: e.value.to, value: mark}]
@@ -30,6 +27,52 @@ const markField = StateField.define({
 		return marks;
 	},
 	provide: f => EditorView.decorations.from(f)
+});
+
+// State field to track tooltips
+const tooltipField = StateField.define({
+	create() { return new Map() },
+	update(tooltips, tr) {
+		tooltips = new Map(tooltips);
+		
+		// Remove tooltips for positions that were changed
+		tr.changes.iterChanges((fromA, toA, fromB, toB) => {
+			for (let [from] of tooltips) {
+				if (from >= fromA && from <= toA) {
+					tooltips.delete(from);
+				}
+			}
+		});
+		
+		// Add new tooltips from effects
+		for (let e of tr.effects) {
+			if (e.is(markWordEffect)) {
+				tooltips.set(e.value.from, e.value.tooltip);
+			}
+		}
+		
+		return tooltips;
+	}
+});
+
+// Hover tooltip extension
+const hoverTooltipExtension = hoverTooltip((view, pos) => {
+	const tooltips = view.state.field(tooltipField);
+	for (let [from, tooltip] of tooltips) {
+		if (pos >= from && pos <= from + 10) { // Check if we're near the start of a marked word
+			return {
+				pos: from,
+				above: true,
+				arrow: true,
+				create: () => {
+					const dom = document.createElement("div");
+					dom.textContent = tooltip;
+					return {dom};
+				}
+			};
+		}
+	}
+	return null;
 });
 
 export class Editor extends HTMLElement {
@@ -53,6 +96,20 @@ export class Editor extends HTMLElement {
 					background-color: #ffeb3b;
 					border-radius: 2px;
 					cursor: help;
+				}
+				.cm-tooltip {
+					background-color: blue !important;
+					color: white;
+					padding: 8px 12px;
+					border-radius: 6px;
+					font-size: 14px;
+					box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+					max-width: 200px;
+					text-align: center;
+				}
+				.cm-tooltip .cm-tooltip-arrow:before,
+				.cm-tooltip .cm-tooltip-arrow:after {
+					border-bottom-color: blue !important;
 				}
 			</style>
 			
@@ -131,7 +188,9 @@ export class Editor extends HTMLElement {
 			extensions: [
 				basicSetup,
 				javascript(),
-				markField
+				markField,
+				tooltipField,
+				hoverTooltipExtension
 			]
 		});
 
