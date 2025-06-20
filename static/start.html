@@ -18,7 +18,7 @@
         }
     }
     </script>
-    <script type="module" src="/static/Editor.mjs"></script>
+    <script type="module" src="/static/StageButton.mjs"></script>
     <style>
         body {
             margin: 0;
@@ -26,15 +26,35 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
+            color: white;
+        }
+        #stage-buttons {
+            width: 70%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: row;
+            gap: 1vh;
+            
+        }
+        stage-button {
+            min-width: 10vw;
+            min-height: 10vw;
+            border: 1px solid white;
+        }
+        stage-button:hover {
+            border: 5px solid white;
         }
     </style>
+
 </head>
 <body>
-    <script>
-      // Get the 'filename' parameter from the URL, default to 'rectangular'
-      const params = new URLSearchParams(window.location.search);
-      const filename = params.get('filename');
-      document.write(`<code-editor filename="${filename}"></code-editor>`);
-    </script>
+    <div id="start">
+        <h1>Canapé</h1>
+        <p>An appetizer for creative coding</p>
+        <div id="stage-buttons">
+            <stage-button filename="rectangular"></stage-button>
+            <stage-button filename="flowfield"></stage-button>
+        </div>
+    </div>
 </body>
 </html>

@@ -3,6 +3,7 @@ import {EditorView, showTooltip, hoverTooltip} from "@codemirror/view"
 import {javascript} from "@codemirror/lang-javascript"
 import {StateEffect, StateField} from "@codemirror/state"
 import {Decoration} from "@codemirror/view"
+import {foldAll, foldGutter, foldState} from "@codemirror/language"
 
 // Effect to mark a word
 const markWordEffect = StateEffect.define({
@@ -16,6 +17,9 @@ const markField = StateField.define({
 		marks = marks.map(tr.changes);
 		for (let e of tr.effects) {
 			if (e.is(markWordEffect)) {
+				if (e.value.clear) {
+					return Decoration.none;
+				}
 				const mark = Decoration.mark({
 					class: "marked-word"
 				});
@@ -86,11 +90,14 @@ export class Editor extends HTMLElement {
 			<style>
 				:host {
 					display: block;
-					width: 100%;
-					height: 100%;
+					width: calc(100% - 2vh);
+					height: calc(100% - 2vh);
+					margin: 1vh;
+					
 				}
 				.cm-editor {
 					height: 100%;
+					width: 100%;
 				}
 				.marked-word {
 					background-color: #ffeb3b;
@@ -111,21 +118,85 @@ export class Editor extends HTMLElement {
 				.cm-tooltip .cm-tooltip-arrow:after {
 					border-bottom-color: blue !important;
 				}
+				canvas {
+					width: 100%;
+					height: 100%;
+				}
+				main {
+					display: flex;
+					flex-direction: row;
+					height: 100%;
+				}
+				#code-editor {	
+					max-width: 45vw;
+					flex: 1;
+					background-color: #f0f0f0;
+				}
+				#canvas-container {
+					flex: 1;
+					max-width: 50vw;
+					position: relative;
+				}
+				#submission {
+					position: absolute;
+					bottom: 0;
+					right: 0;
+					width: calc(100% - 2vh);
+					background-color: #f0f0f0;
+					padding: 1vh;
+					align-items: center;
+					justify-content: center;
+				}
+				#submission {
+					display: flex;
+					gap: 1vh;
+				}
+				#submission input {
+					flex: 1;
+				}
+				#actions {
+					display: flex;
+					flex-direction: column;
+					justify-content: center;
+					gap: 1vh;
+					max-width: 5vw;
+				}
 			</style>
-			
-			<div id="content"></div>
-			
-			<button id="run">Run</button>
-			<input type="text" id="author" />
-			<button id="submit">submit</button>
-			<button id="mark">Mark Word</button>
-			<canvas id="canvas"></canvas>
+			<main>
+				<div id="code-editor">
+				<div id="level-selector">
+					<button id="level1">Level 1</button>
+					<button id="level2">Level 2</button>
+					<button id="level3">Level 3</button>
+				</div>
+				<div id="content"></div>
+				</div>
+				
+				<div id="actions">
+					<button id="run">Run</button>
+					<button id="undo">Undo</button>	
+				</div>
+
+				<div id="canvas-container">
+					<canvas id="canvas"></canvas>
+					<div id="submission">
+						<input type="text" id="author" />
+						<button id="submit">submit</button>
+					</div>
+				</div>
+			</main>
 		`;
 
 		this.shadow.appendChild(container.content.cloneNode(true));
 
 		this.shadow.getElementById('run').addEventListener('click', () => {
+			paper.project.clear();
+			
 			paper.PaperScript.execute(this.view.state.doc.toString(), paper);
+		});
+
+		this.shadow.getElementById('undo').addEventListener('click', () => {
+			
 		});
 
 		this.shadow.getElementById('submit').addEventListener('click', () => {
@@ -154,22 +225,71 @@ export class Editor extends HTMLElement {
 			});
 		});
 
-		this.shadow.getElementById('mark').addEventListener('click', () => {
-			const selection = this.view.state.selection;
-			if (selection.main.empty) {
-				alert('Please select a word to mark');
-				return;
-			}
-			const word = this.view.state.sliceDoc(selection.main.from, selection.main.to);
-			this.view.dispatch({
-				effects: markWordEffect.of({
-					word: word,
-					from: selection.main.from,
-					to: selection.main.to,
-					tooltip: ""
-				})
-			});
+		this.shadow.getElementById('level1').addEventListener('click', () => {
+			this.selectLevel(0);
 		});
+
+		this.shadow.getElementById('level2').addEventListener('click', () => {
+			this.selectLevel(1);
+		});
+
+		this.shadow.getElementById('level3').addEventListener('click', () => {
+			this.selectLevel(2);
+		});
+	}
+
+	removeAllMarks() {
+		this.view.dispatch({
+			effects: markWordEffect.of({
+				clear: true
+			})
+		});
+	}
+
+	selectLevel(level) {
+		this.removeAllMarks();
+		// Mark values assigned to keys from the info object
+		const doc = this.view.state.doc.toString();
+		console.log(this.info[level]);
+		console.log(this.info);
+		for (const key of Object.keys(this.info[level])) {
+			// Look for patterns like key: value or key = value, capturing everything after the equals sign
+			const regex = new RegExp(`${key}\\s*[:=]\\s*(.+)$`, 'gm');
+			let match;
+			while ((match = regex.exec(doc)) !== null) {
+				const valueStart = match.index + match[0].indexOf(match[1]);
+				const valueEnd = valueStart + match[1].length;
+				
+				// Trim whitespace
+				while (doc[valueStart] === ' ') valueStart++;
+				while (doc[valueEnd - 1] === ' ') valueEnd--;
+				
+				this.view.dispatch({
+					effects: markWordEffect.of({
+						word: match[1],
+						from: valueStart,
+						to: valueEnd,
+						tooltip: this.info[level][key]
+					})
+				});
+			}
+		}
+	}
+
+	async loadStage(stage) {
+		console.log("loading stage", stage);
+		const { info, code } = await import(`./sample-codes/${stage}.js`);
+		this.info = info;
+		this.code = code;
+		this.view.dispatch({
+			changes: {
+				from: 0,
+				to: this.view.state.doc.length,
+				insert: this.code
+			}
+		});
+		this.selectLevel(0);
+		foldAll(this.view);
 	}
 
 	async connectedCallback() {
@@ -177,52 +297,24 @@ export class Editor extends HTMLElement {
 		
 		paper.setup(this.shadow.getElementById('canvas'));
 
-		const { info, code } = await import('./sample-codes/rectangular.js');
-		
-
 		const content = this.shadow.getElementById('content');
 		
 		this.view = new EditorView({
-			doc: code,
+			doc: "",
 			parent: content,
 			extensions: [
 				basicSetup,
 				javascript(),
 				markField,
 				tooltipField,
-				hoverTooltipExtension
+				hoverTooltipExtension,
+				foldGutter(),
+				foldState
 			]
 		});
 
-		// Mark values assigned to keys from the info object
-		const doc = this.view.state.doc.toString();
-		for (const key of Object.keys(info)) {
-			// Look for patterns like key: value or key = value, handling both strings and numbers
-			const regex = new RegExp(`${key}\\s*[:=]\\s*(['"]([^'"]+)['"]|(\\d+))`, 'g');
-			let match;
-			while ((match = regex.exec(doc)) !== null) {
-				let valueStart, valueEnd;
-				if (match[2]) { // String value
-					valueStart = match.index + match[0].indexOf("'") + 1;
-					valueEnd = match.index + match[0].lastIndexOf("'");
-				} else { // Number value
-					valueStart = match.index + match[0].lastIndexOf("=") + 1;
-					valueEnd = match.index + match[0].length;
-				}
-				// Trim whitespace
-				while (doc[valueStart] === ' ') valueStart++;
-				while (doc[valueEnd - 1] === ' ') valueEnd--;
-				
-				this.view.dispatch({
-					effects: markWordEffect.of({
-						word: match[2] || match[3],
-						from: valueStart,
-						to: valueEnd,
-						tooltip: info[key]
-					})
-				});
-			}
-		}
+		const filename = this.getAttribute('filename') || 'rectangular';
+		this.loadStage(filename);
 	}
 }
 

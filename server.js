@@ -18,7 +18,20 @@ app.use('/node_modules', (req, res, next) => {
 
 // Routes
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  const sampleCodesDir = __dirname + '/static/sample-codes';
+  let filenames = [];
+  try {
+    filenames = fs.readdirSync(sampleCodesDir)
+      .filter(f => f.endsWith('.js'))
+      .map(f => f.replace(/\.js$/, ''));
+  } catch (e) {
+    // If the directory doesn't exist or is empty, just leave filenames empty
+  }
+  const startHtml = fs.readFileSync(__dirname + '/static/start.html', 'utf8');
+  // Insert the filenames as a JS array in a <script> tag before </body>
+  const inject = `<script>window.sampleStages = ${JSON.stringify(filenames)};</script>`;
+  const resultHtml = startHtml.replace('</body>', `${inject}\n</body>`);
+  res.send(resultHtml);
 });
 
 app.get('/code', (req, res) => {
