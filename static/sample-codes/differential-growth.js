@@ -12,7 +12,7 @@ export var info = [
 {
     ecken: "Mit wie vielen Ecken startet die Form? 3 ist ein Dreieck, 5 ein Stern, 10 ein Kreis!",
     durchmesser: "Wie groß ist die Startform? Zum Beispiel 5 ist winzig, 20 ist mittel, 50 ist riesig!",
-    abstand: "Wie glatt oder zackig wird die Linie? 10 ist ganz weich, 30 ist normal, 100 ist super wild!",
+    abstand: "Ab welcher Größe wachen der Form neue Äste? bei 10 geht's ganz schnell, bei 30 ist normal, bei 100 dauert es eher lange!",
     bewegung: "Wie schnell verändert sich die Form? 0.1 ist langsam, 0.5 ist normal, 1.0 ist richtig schnell!",
     wachstum: "Wie stark wächst und tanzt die Linie? 0.001 ist ruhig, 0.01 ist lebendig, 0.1 ist total verrückt!",
 }
@@ -32,6 +32,9 @@ var schweifTransparenz = 0.01;
 
 var ecken = 5;
 var durchmesser = 5;
+var abstand = 30;
+var bewegung = 0.3;
+var wachstum = 0.001;
 var abstand = 30;
 var bewegung = 0.3;
 var wachstum = 0.001;
@@ -76,6 +79,7 @@ function addNodes(){
         var pA = line.segments[i].point;
         var pB = line.segments[i+1].point;
         if( pA.getDistance(pB) > abstand){
+        if( pA.getDistance(pB) > abstand){
             line.insert(i+1, pA + (pB-pA)/2 );
             line.segments[i+1].vel = new Point(0,0);
             i++;
@@ -83,6 +87,7 @@ function addNodes(){
     }
     var pA = line.segments[line.segments.length-1].point;
     var pB = line.segments[0].point;
+    if( pA.getDistance(pB) > abstand){
     if( pA.getDistance(pB) > abstand){
         line.insert(0, pA + (pB-pA)/2 );
         line.segments[0].vel = new Point(0,0);
@@ -103,15 +108,20 @@ function repulsion(){
         for(var j = 0; j < line.segments.length; j++){
           var other = line.segments[j];
           if (node != other  && node.point.getDistance(other.point) < abstand*2) { 
+          if (node != other  && node.point.getDistance(other.point) < abstand*2) { 
             
             var distance = node.point.getDistance(other.point);
             var diff = node.point - other.point;
+            diff *= Math.exp(abstand - distance); 
             diff *= Math.exp(abstand - distance); 
     
             seek += diff;
           }
         }
     
+        node.vel += seek*wachstum;
+        if(node.vel.length > bewegung){
+            node.vel = node.vel.normalize(bewegung);
         node.vel += seek*wachstum;
         if(node.vel.length > bewegung){
             node.vel = node.vel.normalize(bewegung);
