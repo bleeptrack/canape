@@ -1,7 +1,38 @@
-export var info = [{}, {}, {}]
+export var info = [
+{
+    linienDicke: "Wie dick sollen die Linien sein? Probiere Werte wie 1 oder 10 und schau, wie sich das Bild verändert!",
+    linienTransparenz: "Wie durchsichtig sollen die Linien sein? Werte zwischen 0.0 (unsichtbar) und 1.0 (voll sichtbar) machen Spaß!",
+    basisFarbe: "Welche Grundfarbe sollen die Linien haben? Du kannst englische Farbnamen wie 'teal', 'red' oder 'blue' verwenden."
+    
+},
+{
+    farbVariation: "Wie bunt sollen die Linien werden? 0 ist einfarbig, 1 ist ganz bunt!",
+    zeichnungsGeschwindigkeit: "Wie schnell werden die Linien gezeichnet? Die Zahl gibt an, wie viele Millisekunden die Animation dauert. 1000 ist also eine Sekunde!",
+    anzahlLinien: "Wie viele Linien sollen gezeichnet werden? 10 ist wenig, 300 ist ganz viel!",
+},
+{
+    segmentLaenge: "Wie lang ist jedes Stück der Linie? Kleine Werte machen die Linien geschmeidig, große Werte machen sie chaotisch. Probiere mal 5 oder 100!",
+    skalierung: "Wie wild bewegen sich die Linien? Kleine Werte machen das Muster chaotischer, große Werte machen es ruhiger. Versuche mal 100 oder 500!",
+}
+]
 export var buttonZoom = 1;
 
 export var code = `
+document.body.style.backgroundColor = 'black';
+
+var linienDicke = 5;
+var linienTransparenz = 0.5;
+var basisFarbe = 'teal';
+
+var farbVariation = 0;
+var zeichnungsGeschwindigkeit = 10000;
+var anzahlLinien = 200;
+
+var segmentLaenge = 20;
+var skalierung = 300;
+
+
+
 ///// PERLIN NOISE FROM https://github.com/joeiddon/perlin
 var perlin = {
     rand_vect: function(){
@@ -49,28 +80,22 @@ var perlin = {
 perlin.seed();
 ////// PERLIN NOISE END
 
-document.body.style.backgroundColor = 'black';
-
-var SEGMENT_LENGTH = 20;
-var SCALING = 300;
-var DRAW_SPEED = 5000;
-
 function generateFlow(x,y){
         //line style
         var line = new Path();
-        line.strokeColor = new Color('teal') + Color.random()*0.6
-        line.strokeWidth = 5;
+        line.strokeColor = new Color(basisFarbe) + Color.random()*farbVariation
+        line.strokeWidth = linienDicke;
         line.strokeCap = 'round';
-        line.opacity = 0.5;
+        line.opacity = linienTransparenz;
         var startPoint = new Point(x,y)
         line.addSegment(startPoint)
         
         //here is the interesting part :)
         while(view.bounds.contains(line.lastSegment.point)){
             //get an angle from the perlin noise depending on where the line end currently is
-            var dir = perlin.get(line.lastSegment.point.x / SCALING, line.lastSegment.point.y / SCALING) * 360
+            var dir = perlin.get(line.lastSegment.point.x / skalierung, line.lastSegment.point.y / skalierung) * 360
             //make it into an vector of a certain length
-            var vec = new Point(0,1).rotate(dir).multiply(SEGMENT_LENGTH);
+            var vec = new Point(0,1).rotate(dir).multiply(segmentLaenge);
             //add vector to and of your line
             line.lineBy(vec)
         }
@@ -79,10 +104,10 @@ function generateFlow(x,y){
         //drawing animation
         line.dashArray = [line.length, line.length];
         line.dashOffset = line.length;
-        line.tweenTo({dashOffset: 0}, DRAW_SPEED);
+        line.tweenTo({dashOffset: 0}, zeichnungsGeschwindigkeit);
     }
 
-for(var i = 0; i < 300; i++){
+for(var i = 0; i < anzahlLinien; i++){
     generateFlow(Point.random() * view.bounds.size);
 }
 
