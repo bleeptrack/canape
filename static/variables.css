@@ -1,0 +1,10 @@
+:root {
+  --primary-color: #007bff;
+  --secondary-color: #6c757d;
+  --background-color: #f8f9fa;
+  --text-color: #222;
+  --font-title: 'Rubik Marker Hatch', cursive;
+  --font-family: 'Segoe UI', Arial, sans-serif;
+  --border-radius: 4px;
+  --transition: 0.2s all ease-in-out;
+} 

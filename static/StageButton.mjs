@@ -24,6 +24,7 @@ class StageButton extends HTMLElement {
     async connectedCallback() {
         paper.install(window)
         this.filename = this.getAttribute('filename');
+        this.stopAfter = this.getAttribute('stop-after');
         this.shadow.getElementById('title').textContent = this.filename.toUpperCase();
         this.canvas = this.shadow.getElementById('canvas');
         this.canvas.id = `canvas-${this.filename}`;
@@ -42,9 +43,19 @@ class StageButton extends HTMLElement {
         this.shadowRoot.querySelector('#stage-button').addEventListener('mouseover', () => {
             paperScope1.project.clear();
             paperScope1.PaperScript.execute(code, paperScope1);
+
+            if (this.stopAfter) {
+                setTimeout(() => {
+                    paperScope1.project.view.pause();
+                }, this.stopAfter);
+            }
         });
 
-        
+        if (this.stopAfter) {
+            setTimeout(() => {
+                paperScope1.project.view.pause();
+            }, this.stopAfter);
+        }
     }
 
     disconnectedCallback() {
