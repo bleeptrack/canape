@@ -10,6 +10,8 @@ class StageButton extends HTMLElement {
                 }
                 h2 {
                     margin: 0;
+                    display: none;
+                    visibility: hidden;
                 }
             </style>
             <div id="stage-button">
@@ -45,6 +47,11 @@ class StageButton extends HTMLElement {
             paperScope1.PaperScript.execute(code, paperScope1);
 
             if (this.stopAfter) {
+                // Clear all other timeouts before setting a new one
+                if (this._stageButtonTimeouts) {
+                    this._stageButtonTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+                }
+                this._stageButtonTimeouts = [];
                 setTimeout(() => {
                     paperScope1.project.view.pause();
                 }, this.stopAfter);
