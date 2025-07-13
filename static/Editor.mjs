@@ -4,6 +4,8 @@ import {javascript} from "@codemirror/lang-javascript"
 import {StateEffect, StateField} from "@codemirror/state"
 import {Decoration} from "@codemirror/view"
 import {foldAll, foldGutter, foldState} from "@codemirror/language"
+import {syntaxHighlighting, HighlightStyle} from "@codemirror/language"
+import {tags} from "@lezer/highlight"
 
 // Effect to mark a word
 const markWordEffect = StateEffect.define({
@@ -28,10 +30,18 @@ const markField = StateField.define({
 				});
 			}
 		}
-		return marks;
+		return marks;const myHighlightStyle = HighlightStyle.define([
+			{tag: tags.keyword, color: "#fc6"},
+			{tag: tags.comment, color: "#f5d", fontStyle: "italic"}
+		  ])
 	},
 	provide: f => EditorView.decorations.from(f)
 });
+
+const myHighlightStyle = HighlightStyle.define([
+	{tag: tags.keyword, color: "#fc6"},
+	{tag: tags.comment, color: "#f5d", fontStyle: "italic"}
+  ])
 
 // State field to track tooltips
 const tooltipField = StateField.define({
@@ -99,24 +109,128 @@ export class Editor extends HTMLElement {
 					height: 100%;
 					width: 100%;
 				}
+				
+				/* CodeMirror Theme Customization */
+				.cm-editor {
+					background-color: var(--background-color, #272620);
+					color: var(--text-color, #fff);
+					font-family: var(--font-family, Arial, sans-serif);
+				}
+				
+				/* Editor content area */
+				.cm-content {
+					background-color: var(--background-color, #272620);
+					color: var(--text-color, #fff);
+				}
+				
+				/* Line numbers */
+				.cm-gutters {
+					background-color: var(--background-color, #272620);
+					border-right: 1px solid var(--secondary-color, #00ffd0);
+					color: var(--secondary-color, #00ffd0);
+				}
+				
+				/* Active line highlighting */
+				.cm-activeLine {
+					background-color: rgba(255, 0, 85, 0.1);
+				}
+				
+				/* Selection */
+				.cm-selectionBackground {
+					background-color: rgba(0, 255, 208, 0.3);
+				}
+				
+				/* Syntax highlighting */
+				.cm-keyword {
+					color: var(--primary-color, #ff0055);
+					font-weight: bold;
+				}
+				
+				.cm-string {
+					color: var(--secondary-color, #00ffd0);
+				}
+				
+				.cm-number {
+					color: var(--secondary-color, #00ffd0);
+				}
+				
+				.cm-comment {
+					color: #888;
+					font-style: italic;
+				}
+				
+				.cm-operator {
+					color: var(--primary-color, #ff0055);
+				}
+				
+				.cm-variable {
+					color: var(--text-color, #fff);
+				}
+				
+				.cm-variable-2 {
+					color: var(--text-color, #fff);
+				}
+				
+				.cm-property {
+					color: var(--secondary-color, #00ffd0);
+				}
+				
+				.cm-definition {
+					color: var(--primary-color, #ff0055);
+				}
+				
+				.cm-function {
+					color: var(--primary-color, #ff0055);
+				}
+				
+				.cm-builtin {
+					color: var(--primary-color, #ff0055);
+				}
+				
+				/* Cursor */
+				.cm-cursor {
+					border-left-color: var(--primary-color, #ff0055);
+				}
+				
+				/* Scrollbar */
+				.cm-scroller::-webkit-scrollbar {
+					width: 8px;
+				}
+				
+				.cm-scroller::-webkit-scrollbar-track {
+					background: var(--background-color, #272620);
+				}
+				
+				.cm-scroller::-webkit-scrollbar-thumb {
+					background: var(--secondary-color, #00ffd0);
+					border-radius: 4px;
+				}
+				
+				.cm-scroller::-webkit-scrollbar-thumb:hover {
+					background: var(--primary-color, #ff0055);
+				}
+				
 				.marked-word {
-					background-color: #ffeb3b;
+					background-color: var(--primary-color, #ff0055);
+					color: var(--background-color, #272620);
 					border-radius: 2px;
 					cursor: help;
+					font-weight: bold;
 				}
 				.cm-tooltip {
-					background-color: blue !important;
-					color: white;
+					background-color: var(--primary-color, #ff0055) !important;
+					color: var(--background-color, #272620);
 					padding: 8px 12px;
 					border-radius: 6px;
 					font-size: 14px;
 					box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 					max-width: 200px;
 					text-align: center;
+					font-weight: bold;
 				}
 				.cm-tooltip .cm-tooltip-arrow:before,
 				.cm-tooltip .cm-tooltip-arrow:after {
-					border-bottom-color: blue !important;
+					border-bottom-color: var(--primary-color, #ff0055) !important;
 				}
 				canvas {
 					width: 100%;
@@ -130,7 +244,6 @@ export class Editor extends HTMLElement {
 				#code-editor {	
 					max-width: 45vw;
 					flex: 1;
-					background-color: #f0f0f0;
 				}
 				#canvas-container {
 					flex: 1;
@@ -161,13 +274,88 @@ export class Editor extends HTMLElement {
 					gap: 1vh;
 					max-width: 5vw;
 				}
+				#level-selector {
+					display: flex;
+					gap: 1vh;
+					margin-bottom: 1vh;
+				}
+				#level-selector button {
+					flex: 1;
+					padding: 0.5em;
+					background: var(--background-color);
+					color: var(--primary-color);
+					border: 2px solid var(--primary-color);
+					border-radius: var(--border-radius);
+					cursor: pointer;
+					font-family: var(--header-font-family);
+					box-shadow: 2px 2px 0 var(--secondary-color), 4px 4px 0 #0002;
+					transition: var(--transition);
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					gap: 0.5em;
+					font-size: 0.9em;
+				}
+				#level-selector button:hover {
+					background: var(--secondary-color);
+					color: #fff;
+					border-color: var(--secondary-color);
+					transform: translate(-2px, -2px);
+					box-shadow: 4px 4px 0 var(--primary-color), 8px 8px 0 #0003;
+				}
+				#level-selector button.active {
+					background: var(--primary-color);
+					color: #fff;
+					box-shadow: 2px 2px 0 var(--secondary-color), 4px 4px 0 #0002;
+				}
+				.star-icon {
+					font-size: 1.2em;
+					line-height: 1;
+				}
+				#actions button {
+					background: var(--background-color);
+					color: var(--primary-color);
+					border: 2px solid var(--primary-color);
+					border-radius: var(--border-radius);
+					padding: 0.5em;
+					cursor: pointer;
+					font-family: var(--header-font-family);
+					box-shadow: 2px 2px 0 var(--secondary-color), 4px 4px 0 #0002;
+					transition: var(--transition);
+					font-size: 0.9em;
+				}
+				#actions button:hover {
+					background: var(--secondary-color);
+					color: #fff;
+					border-color: var(--secondary-color);
+					transform: translate(-2px, -2px);
+					box-shadow: 4px 4px 0 var(--primary-color), 8px 8px 0 #0003;
+				}
+				#submit {
+					background: var(--background-color);
+					color: var(--primary-color);
+					border: 2px solid var(--primary-color);
+					border-radius: var(--border-radius);
+					padding: 0.5em 1em;
+					cursor: pointer;
+					font-family: var(--header-font-family);
+					box-shadow: 2px 2px 0 var(--secondary-color), 4px 4px 0 #0002;
+					transition: var(--transition);
+				}
+				#submit:hover {
+					background: var(--secondary-color);
+					color: #fff;
+					border-color: var(--secondary-color);
+					transform: translate(-2px, -2px);
+					box-shadow: 4px 4px 0 var(--primary-color), 8px 8px 0 #0003;
+				}
 			</style>
 			<main>
 				<div id="code-editor">
 				<div id="level-selector">
-					<button id="level1">Level 1</button>
-					<button id="level2">Level 2</button>
-					<button id="level3">Level 3</button>
+					<button id="level1"><span class="star-icon">★</span>Level 1</button>
+					<button id="level2"><span class="star-icon">★★</span>Level 2</button>
+					<button id="level3"><span class="star-icon">★★★</span>Level 3</button>
 				</div>
 				<div id="content"></div>
 				</div>
@@ -248,6 +436,18 @@ export class Editor extends HTMLElement {
 
 	selectLevel(level) {
 		this.removeAllMarks();
+		
+		// Update active button styling
+		const levelButtons = ['level1', 'level2', 'level3'];
+		levelButtons.forEach((buttonId, index) => {
+			const button = this.shadow.getElementById(buttonId);
+			if (index === level) {
+				button.classList.add('active');
+			} else {
+				button.classList.remove('active');
+			}
+		});
+		
 		// Mark values assigned to keys from the info object
 		const doc = this.view.state.doc.toString();
 		console.log(this.info[level]);
@@ -290,6 +490,7 @@ export class Editor extends HTMLElement {
 		});
 		this.selectLevel(0);
 		foldAll(this.view);
+		this.shadow.getElementById('run').click();
 	}
 
 	async connectedCallback() {
@@ -305,6 +506,7 @@ export class Editor extends HTMLElement {
 			extensions: [
 				basicSetup,
 				javascript(),
+				syntaxHighlighting(myHighlightStyle),
 				markField,
 				tooltipField,
 				hoverTooltipExtension,
