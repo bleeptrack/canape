@@ -115,19 +115,29 @@ export class Editor extends HTMLElement {
 					background-color: var(--background-color, #272620);
 					color: var(--text-color, #fff);
 					font-family: var(--font-family, Arial, sans-serif);
+					font-size: 16px;
 				}
 				
 				/* Editor content area */
 				.cm-content {
 					background-color: var(--background-color, #272620);
 					color: var(--text-color, #fff);
+					font-size: 16px;
 				}
 				
 				/* Line numbers */
 				.cm-gutters {
-					background-color: var(--background-color, #272620);
-					border-right: 1px solid var(--secondary-color, #00ffd0);
-					color: var(--secondary-color, #00ffd0);
+					background-color: var(--secondary-color, #00ffd0) !important;
+					border-right: 1px solid var(--secondary-color, #00ffd0) !important;
+					color: var(--background-color, #272620) !important;
+				}
+				.cm-lineNumbers {
+					background-color: var(--secondary-color, #00ffd0) !important;
+					color: var(--background-color, #272620) !important;
+				}
+				.cm-gutterElement {
+					background-color: var(--secondary-color, #00ffd0) !important;
+					color: var(--background-color, #272620) !important;
 				}
 				
 				/* Active line highlighting */
@@ -220,11 +230,11 @@ export class Editor extends HTMLElement {
 				.cm-tooltip {
 					background-color: var(--primary-color, #ff0055) !important;
 					color: var(--background-color, #272620);
-					padding: 8px 12px;
-					border-radius: 6px;
-					font-size: 14px;
-					box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-					max-width: 200px;
+					padding: 12px 16px;
+					border-radius: 8px;
+					font-size: 42px;
+					box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+					max-width: 400px;
 					text-align: center;
 					font-weight: bold;
 				}
@@ -244,6 +254,15 @@ export class Editor extends HTMLElement {
 				#code-editor {	
 					max-width: 45vw;
 					flex: 1;
+					height: 100%;
+					display: flex;
+					flex-direction: column;
+					overflow: hidden;
+				}
+				#content {
+					flex: 1;
+					overflow: hidden;
+					min-height: 0;
 				}
 				#canvas-container {
 					flex: 1;
@@ -255,7 +274,6 @@ export class Editor extends HTMLElement {
 					bottom: 0;
 					right: 0;
 					width: calc(100% - 2vh);
-					background-color: #f0f0f0;
 					padding: 1vh;
 					align-items: center;
 					justify-content: center;
@@ -266,13 +284,27 @@ export class Editor extends HTMLElement {
 				}
 				#submission input {
 					flex: 1;
+					font-size: 1.1em;
+					padding: 1em;
+					font-family: var(--font-family);
+					background: var(--background-color);
+					color: var(--text-color);
+					border: 2px solid var(--primary-color);
+					border-radius: var(--border-radius);
+					height: 100%;
+					box-sizing: border-box;
+				}
+				#submission input::placeholder {
+					color: var(--secondary-color, #00ffd0);
+					opacity: 0.8;
+					font-family: var(--font-family);
 				}
 				#actions {
 					display: flex;
 					flex-direction: column;
 					justify-content: center;
-					gap: 1vh;
-					max-width: 5vw;
+					gap: 3vh;
+					max-width: 9vw;
 				}
 				#level-selector {
 					display: flex;
@@ -294,7 +326,8 @@ export class Editor extends HTMLElement {
 					align-items: center;
 					justify-content: center;
 					gap: 0.5em;
-					font-size: 0.9em;
+					font-size: 1.1em;
+					letter-spacing: 1px;
 				}
 				#level-selector button:hover {
 					background: var(--secondary-color);
@@ -309,7 +342,7 @@ export class Editor extends HTMLElement {
 					box-shadow: 2px 2px 0 var(--secondary-color), 4px 4px 0 #0002;
 				}
 				.star-icon {
-					font-size: 1.2em;
+					font-size: 1.4em;
 					line-height: 1;
 				}
 				#actions button {
@@ -322,7 +355,17 @@ export class Editor extends HTMLElement {
 					font-family: var(--header-font-family);
 					box-shadow: 2px 2px 0 var(--secondary-color), 4px 4px 0 #0002;
 					transition: var(--transition);
-					font-size: 0.9em;
+					width: 6vw;
+					height: 6vw;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					margin: 1vh;
+				}
+				#actions button svg {
+					width: 80%;
+					height: 80%;
+					fill: currentColor;
 				}
 				#actions button:hover {
 					background: var(--secondary-color);
@@ -336,11 +379,19 @@ export class Editor extends HTMLElement {
 					color: var(--primary-color);
 					border: 2px solid var(--primary-color);
 					border-radius: var(--border-radius);
-					padding: 0.5em 1em;
+					padding: 1em;
 					cursor: pointer;
 					font-family: var(--header-font-family);
 					box-shadow: 2px 2px 0 var(--secondary-color), 4px 4px 0 #0002;
 					transition: var(--transition);
+					display: flex;
+					align-items: center;
+					justify-content: center;
+				}
+				#submit svg {
+					width: 2em;
+					height: 2em;
+					fill: currentColor;
 				}
 				#submit:hover {
 					background: var(--secondary-color);
@@ -353,23 +404,30 @@ export class Editor extends HTMLElement {
 			<main>
 				<div id="code-editor">
 				<div id="level-selector">
-					<button id="level1"><span class="star-icon">★</span>Level 1</button>
-					<button id="level2"><span class="star-icon">★★</span>Level 2</button>
-					<button id="level3"><span class="star-icon">★★★</span>Level 3</button>
+					<button id="level1"><span class="star-icon">★</span></button>
+					<button id="level2"><span class="star-icon">★★</span></button>
+					<button id="level3"><span class="star-icon">★★★</span></button>
 				</div>
 				<div id="content"></div>
 				</div>
 				
 				<div id="actions">
-					<button id="run">Run</button>
-					<button id="undo">Undo</button>	
+					<button id="run" title="Run Code">
+						<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+							<path d="M8 5v14l11-7z"/>
+						</svg>
+					</button>
 				</div>
 
 				<div id="canvas-container">
 					<canvas id="canvas"></canvas>
 					<div id="submission">
-						<input type="text" id="author" />
-						<button id="submit">submit</button>
+						<input type="text" id="author" placeholder="DEIN NAME" />
+						<button id="submit" title="Send Code">
+							<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+								<path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+							</svg>
+						</button>
 					</div>
 				</div>
 			</main>
@@ -381,10 +439,6 @@ export class Editor extends HTMLElement {
 			paper.project.clear();
 			
 			paper.PaperScript.execute(this.view.state.doc.toString(), paper);
-		});
-
-		this.shadow.getElementById('undo').addEventListener('click', () => {
-			
 		});
 
 		this.shadow.getElementById('submit').addEventListener('click', () => {
