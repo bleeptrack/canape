@@ -1,5 +1,13 @@
 @import url('variables.css');
 
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 body {
   font-family: var(--font-family);
   color: var(--text-color);
@@ -91,3 +99,9 @@ stage-button:hover {
     inset 0 0 0 4px var(--background-color);
   transform: translate(-4px, -4px);
 } 
+
+animation-presenter{
+  display: block;
+  width: 100%;
+  height: 100%;
+}
