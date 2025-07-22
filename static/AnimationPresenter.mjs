@@ -47,6 +47,7 @@ export class AnimationPresenter extends HTMLElement {
 
     runAnimation() {
         paper.project.clear();
+        paper.project.view.onFrame = () => {}
         this.loadSnippets().then(snippets => {
             console.log(snippets);
 

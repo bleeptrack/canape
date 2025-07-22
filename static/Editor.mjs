@@ -457,13 +457,13 @@ export class Editor extends HTMLElement {
 			})
 			.then(response => {
 				if (!response.ok) {
-					throw new Error('Network response was not ok');
+					throw new Error('Oops, da ist was schiefgelaufen. Bitte versuche es erneut.');
 				}
-				alert('Code saved successfully!');
+				alert('Dein Code wurde an den Beamer gesendet!');
 			})
 			.catch(error => {
 				console.error('Error:', error);
-				alert('Error saving code. Please try again.');
+				alert('Oops, da ist was schiefgelaufen. Bitte versuche es erneut.');
 			});
 		});
 
