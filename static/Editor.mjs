@@ -545,6 +545,33 @@ export class Editor extends HTMLElement {
 		this.selectLevel(0);
 		foldAll(this.view);
 		this.shadow.getElementById('run').click();
+
+		console.log(this.shadow.querySelector('.marked-word'))
+
+		introJs().setOptions({
+			nextLabel: '→',      // Customize as you like
+			prevLabel: '←',      // Customize as you like
+			doneLabel: 'Fertig!',
+			showBullets: false,
+			steps: [
+			  {
+				element: this.shadow.querySelector('.marked-word'),
+				intro: "Suche dir eine markierte Stelle im Code und halte den Mauszeiger darüber. Dort findest du Tipps zu Dingen, die du im Code ändern kannst!"
+			  },
+			  {
+				element: this.shadow.getElementById('level-selector'),
+				intro: "Die Tipps waren zu einfach? Dann kannst du die Schwierigkeit erhöhen!"
+			  },
+			  {
+				element: this.shadow.getElementById('run'),
+				intro: 'Wenn du eine Änderung am Code vorgenommen hast, dann klicke hier um ihn auszuführen!'
+			  },
+			  {
+				element: this.shadow.getElementById('submit'),
+				intro: "Dir gefällt deine Animation? Gib deinen Namen ein und ab geht's damit auf den Beamer!"
+			  }
+			]
+		  }).start();
 	}
 
 	async connectedCallback() {
@@ -571,6 +598,8 @@ export class Editor extends HTMLElement {
 
 		const filename = this.getAttribute('filename') || 'rectangular';
 		this.loadStage(filename);
+
+		
 	}
 }
 

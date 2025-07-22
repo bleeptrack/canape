@@ -21,6 +21,7 @@ export var buttonZoom = 0.9;
 
 export var code = `
 //based on https://www.kaspar.wtf/code-poems/differential-growth 
+document.body.style.backgroundColor = 'black';
 
 strichDicke = 0;
 strichFarbe = 'black';
@@ -32,9 +33,6 @@ var schweifTransparenz = 0.01;
 
 var ecken = 5;
 var durchmesser = 5;
-var abstand = 30;
-var bewegung = 0.3;
-var wachstum = 0.001;
 var abstand = 30;
 var bewegung = 0.3;
 var wachstum = 0.001;
@@ -79,7 +77,6 @@ function addNodes(){
         var pA = line.segments[i].point;
         var pB = line.segments[i+1].point;
         if( pA.getDistance(pB) > abstand){
-        if( pA.getDistance(pB) > abstand){
             line.insert(i+1, pA + (pB-pA)/2 );
             line.segments[i+1].vel = new Point(0,0);
             i++;
@@ -87,7 +84,6 @@ function addNodes(){
     }
     var pA = line.segments[line.segments.length-1].point;
     var pB = line.segments[0].point;
-    if( pA.getDistance(pB) > abstand){
     if( pA.getDistance(pB) > abstand){
         line.insert(0, pA + (pB-pA)/2 );
         line.segments[0].vel = new Point(0,0);
@@ -108,20 +104,15 @@ function repulsion(){
         for(var j = 0; j < line.segments.length; j++){
           var other = line.segments[j];
           if (node != other  && node.point.getDistance(other.point) < abstand*2) { 
-          if (node != other  && node.point.getDistance(other.point) < abstand*2) { 
             
             var distance = node.point.getDistance(other.point);
             var diff = node.point - other.point;
-            diff *= Math.exp(abstand - distance); 
             diff *= Math.exp(abstand - distance); 
     
             seek += diff;
           }
         }
     
-        node.vel += seek*wachstum;
-        if(node.vel.length > bewegung){
-            node.vel = node.vel.normalize(bewegung);
         node.vel += seek*wachstum;
         if(node.vel.length > bewegung){
             node.vel = node.vel.normalize(bewegung);
