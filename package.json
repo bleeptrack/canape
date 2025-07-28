@@ -18,9 +18,12 @@
   },
   "homepage": "https://github.com/bleeptrack/canape#readme",
   "dependencies": {
+    "@babel/parser": "^7.28.0",
+    "@babel/standalone": "^7.28.2",
     "codemirror": "^6.0.1",
     "express": "^5.1.0",
     "paper": "^0.12.18",
+    "prettier": "^3.6.2",
     "sendmail": "^1.6.1"
   }
 }

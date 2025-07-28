@@ -3,6 +3,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 const fs = require('fs');
 const sendmail = require('sendmail')();
+const prettier = require('prettier');
 
 // Middleware
 app.use(express.json());
@@ -68,15 +69,36 @@ app.get('/animation', (req, res) => {
 });
 
 // Route to send email with code
-app.post('/send-email', (req, res) => {
+app.post('/send-email', async (req, res) => {
   const { email, code, author } = req.body;
   
   if (!email || !code || !author) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
+  // Prettify the code content
+  let processedCode = code;
+
+  try {
+    processedCode = await prettier.format(code, {
+      parser: 'babel',
+      semi: true,
+      singleQuote: true,
+      trailingComma: 'es5',
+      printWidth: 80,
+      tabWidth: 2,
+      useTabs: false
+    });
+    console.log('Code prettified successfully');
+  } catch (error) {
+    console.log('Could not prettify code, using original formatting:', error.message);
+  }
+
+  console.log('Original code length:', code.length);
+  console.log('Processed code length:', processedCode.length);
+
   const mailOptions = {
-    from: 'mail@bleeptrack.de',
+    from: 'info@canape.local',
     to: email,
     subject: `Dein Code von ${author} - Canape`,
     html: `
@@ -91,7 +113,7 @@ app.post('/send-email', (req, res) => {
     attachments: [
       {
         filename: `${author}_code.txt`,
-        content: code.replace(/\r\n/g, '\n').replace(/\r/g, '\n'),
+        content: processedCode,
         contentType: 'text/plain'
       }
     ]
