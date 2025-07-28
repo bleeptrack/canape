@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
 const fs = require('fs');
+const sendmail = require('sendmail')();
 
 // Middleware
 app.use(express.json());
@@ -66,6 +67,49 @@ app.get('/animation', (req, res) => {
   res.sendFile(__dirname + '/static/show.html');
 });
 
+// Route to send email with code
+app.post('/send-email', (req, res) => {
+  const { email, code, author } = req.body;
+  
+  if (!email || !code || !author) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  const mailOptions = {
+    from: 'mail@bleeptrack.de',
+    to: email,
+    subject: `Dein Code von ${author} - Canape`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #ff0055;">Hallo!</h2>
+        <p>Hier ist dein Code von der Canape Session als Anhang!</p>
+        <p>Der Code ist als JavaScript-Datei beigefügt und kann direkt verwendet werden. Du kannst ihn z.B. im Online Editor von <a href="https://sketch.paperjs.org">sketch.paperjs.org</a> öffnen und ausführen.</p>
+        <p>Viel Spaß beim Weiterentwickeln!</p>
+        <p style="color: #888; font-size: 12px;">Gesendet von Canape - Generative Art Coding</p>
+      </div>
+    `,
+    attachments: [
+      {
+        filename: `${author}_code.txt`,
+        content: code.replace(/\r\n/g, '\n').replace(/\r/g, '\n'),
+        contentType: 'text/plain'
+      }
+    ]
+  };
+
+  sendmail(mailOptions, (err, reply) => {
+    if (err) {
+      console.error('Email error:', err);
+      res.status(500).json({ error: 'Failed to send email' });
+    } else {
+      console.log(`Email sent to: ${email}`);
+      console.log(`From: ${author}`);
+      console.log(`Code length: ${code.length} characters`);
+      console.log('Sendmail reply:', reply);
+      res.json({ success: true, message: 'Email sent successfully!' });
+    }
+  });
+});
 
 // Start server
 app.listen(port, () => {

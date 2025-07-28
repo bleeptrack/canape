@@ -20,6 +20,7 @@
   "dependencies": {
     "codemirror": "^6.0.1",
     "express": "^5.1.0",
-    "paper": "^0.12.18"
+    "paper": "^0.12.18",
+    "sendmail": "^1.6.1"
   }
 }

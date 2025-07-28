@@ -400,6 +400,151 @@ export class Editor extends HTMLElement {
 					transform: translate(-2px, -2px);
 					box-shadow: 4px 4px 0 var(--primary-color), 8px 8px 0 #0003;
 				}
+				
+				/* Popover Styling */
+				#popover {
+					position: fixed;
+					top: 50%;
+					left: 50%;
+					transform: translate(-50%, -50%);
+					background: var(--background-color);
+					border: 3px solid var(--primary-color);
+					border-radius: var(--border-radius);
+					box-shadow: 4px 4px 0 var(--secondary-color), 8px 8px 0 #0003;
+					padding: 0;
+					min-width: 300px;
+					max-width: 500px;
+					z-index: 1000;
+				}
+				
+				#popover-content {
+					display: flex;
+					flex-direction: column;
+					gap: 1em;
+					padding: 2em;
+					position: relative;
+				}
+				
+				#popover-message {
+					color: var(--text-color);
+					font-size: 1.2em;
+					text-align: center;
+					line-height: 1.4;
+					font-weight: bold;
+				}
+				
+				#popover-message #email {
+					width: 100%;
+					padding: 1em;
+					font-size: 1.2em;
+					background: var(--background-color);
+					color: var(--text-color);
+					border: 2px solid var(--primary-color);
+					border-radius: var(--border-radius);
+					margin: 1em 0;
+					box-sizing: border-box;
+					box-shadow: 2px 2px 0 var(--secondary-color), 4px 4px 0 #0002;
+				}
+				
+				#popover-message #email::placeholder {
+					color: var(--secondary-color);
+					opacity: 0.8;
+				}
+				
+				#popover-message button {
+					background: var(--background-color);
+					color: var(--primary-color);
+					border: 2px solid var(--primary-color);
+					border-radius: var(--border-radius);
+					padding: 1em 2em;
+					cursor: pointer;
+					font-size: 1.2em;
+					font-weight: bold;
+					box-shadow: 2px 2px 0 var(--secondary-color), 4px 4px 0 #0002;
+					transition: var(--transition);
+					margin: 1em 0;
+				}
+				
+				#popover-message button:hover {
+					background: var(--secondary-color);
+					color: #fff;
+					border-color: var(--secondary-color);
+					transform: translate(-2px, -2px);
+					box-shadow: 4px 4px 0 var(--primary-color), 8px 8px 0 #0003;
+				}
+				
+				#email-success {
+					text-align: center;
+				}
+				
+				#email-success button {
+					margin: 0 0.5em;
+					background: var(--background-color);
+					color: var(--primary-color);
+					border: 2px solid var(--primary-color);
+					border-radius: var(--border-radius);
+					padding: 0.8em 1.5em;
+					cursor: pointer;
+					font-size: 1em;
+					font-weight: bold;
+					box-shadow: 2px 2px 0 var(--secondary-color), 4px 4px 0 #0002;
+					transition: var(--transition);
+					margin-bottom: 1vh;
+				}
+				
+				#email-success button:hover {
+					background: var(--secondary-color);
+					color: #fff;
+					border-color: var(--secondary-color);
+					transform: translate(-2px, -2px);
+					box-shadow: 4px 4px 0 var(--primary-color), 8px 8px 0 #0003;
+				}
+				
+				#popover-close {
+					position: absolute;
+					top: 0.5em;
+					right: 0.5em;
+					background: var(--primary-color);
+					color: var(--background-color);
+					border: none;
+					border-radius: 50%;
+					width: 2em;
+					height: 2em;
+					cursor: pointer;
+					font-size: 1.2em;
+					font-weight: bold;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					box-shadow: 2px 2px 0 var(--secondary-color);
+					transition: var(--transition);
+				}
+				
+				#popover-close:hover {
+					background: var(--secondary-color);
+					transform: translate(-1px, -1px);
+					box-shadow: 3px 3px 0 var(--primary-color);
+				}
+				
+				/* Success state */
+				#popover.success {
+					border-color: var(--secondary-color);
+					box-shadow: 4px 4px 0 var(--primary-color), 8px 8px 0 #0003;
+				}
+				
+				#popover.success #popover-close {
+					background: var(--secondary-color);
+				}
+				
+				/* Error state */
+				#popover.error {
+					border-color: #ff4444;
+					box-shadow: 4px 4px 0 #ff8888, 8px 8px 0 #0003;
+				}
+				
+				#popover.error #popover-close {
+					background: #ff4444;
+				}
 			</style>
 			<main>
 				<div id="code-editor">
@@ -428,6 +573,35 @@ export class Editor extends HTMLElement {
 								<path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
 							</svg>
 						</button>
+					</div>
+				</div>
+				
+				<div id="popover" popover>
+					<div id="popover-content">
+						<div id="popover-message">
+							Dein Code wurde an den Beamer gesendet!
+							<br>
+							<br>
+							Möchtest du ein Andenken behalten? Trage hier deine E-Mail-Adresse ein, um eine E-Mail mit dem Code zu erhalten!
+							<br>
+							<br>
+							<input type="email" id="email" placeholder="Deine E-Mail-Adresse" />
+							<button id="email-submit">Absenden</button>
+							<br>
+							<br>
+							<div id="email-success" style="display: none;">
+								E-Mail wurde erfolgreich gesendet!
+								<br>
+								<br>
+								Was möchtest du jetzt machen?
+								<br>
+								<br>
+								<button id="continue-coding">Weiter coden</button>
+								<button id="go-back">Zurück zum Start</button>
+							</div>
+						
+						</div>
+						<button id="popover-close">✕</button>
 					</div>
 				</div>
 			</main>
@@ -459,7 +633,7 @@ export class Editor extends HTMLElement {
 				if (!response.ok) {
 					throw new Error('Oops, da ist was schiefgelaufen. Bitte versuche es erneut.');
 				}
-				alert('Dein Code wurde an den Beamer gesendet!');
+				this.showPopover();
 			})
 			.catch(error => {
 				console.error('Error:', error);
@@ -478,6 +652,76 @@ export class Editor extends HTMLElement {
 		this.shadow.getElementById('level3').addEventListener('click', () => {
 			this.selectLevel(2);
 		});
+
+		// Popover close button event listener
+		this.shadow.getElementById('popover-close').addEventListener('click', () => {
+			this.hidePopover();
+		});
+
+		// Email submit button event listener
+		this.shadow.getElementById('email-submit').addEventListener('click', () => {
+			this.sendEmail();
+		});
+
+		// Continue coding button event listener
+		this.shadow.getElementById('continue-coding').addEventListener('click', () => {
+			this.hidePopover();
+		});
+
+		// Go back button event listener
+		this.shadow.getElementById('go-back').addEventListener('click', () => {
+			window.location.href = '/';
+		});
+	}
+
+	showPopover() {
+		const popover = this.shadow.getElementById('popover');
+		popover.showPopover();
+		
+	}
+
+	hidePopover() {
+		const popover = this.shadow.getElementById('popover');
+		popover.hidePopover();
+	}
+
+	async sendEmail() {
+		const email = this.shadow.getElementById('email').value;
+		const author = this.shadow.getElementById('author').value;
+		const code = this.view.state.doc.toString();
+
+		if (!email) {
+			alert('Bitte gib eine E-Mail-Adresse ein!');
+			return;
+		}
+
+		// Show success options immediately
+		this.shadow.getElementById('email').style.display = 'none';
+		this.shadow.getElementById('email-submit').style.display = 'none';
+		this.shadow.getElementById('email-success').style.display = 'block';
+
+		// Send email in background (don't wait for response)
+		try {
+			const response = await fetch('/send-email', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					email: email,
+					code: code,
+					author: author
+				})
+			});
+
+			const result = await response.json();
+			
+			if (!result.success) {
+				console.error('Email error:', result.error);
+			}
+		} catch (error) {
+			console.error('Email error:', error);
+		}
 	}
 
 	removeAllMarks() {
