@@ -100,10 +100,9 @@ export class Editor extends HTMLElement {
 			<style>
 				:host {
 					display: block;
-					width: calc(100% - 2vh);
-					height: calc(100% - 2vh);
-					margin: 1vh;
-					
+					width: calc(100% - 10vh);
+					height: calc(100% - 10vh);
+					margin: 5vh;
 				}
 				.cm-editor {
 					height: 100%;
@@ -250,6 +249,42 @@ export class Editor extends HTMLElement {
 					display: flex;
 					flex-direction: row;
 					height: 100%;
+					position: relative;
+				}
+				
+				#home-button {
+					position: absolute;
+					top: 2vh;
+					right: 2vh;
+					background: var(--background-color);
+					color: var(--primary-color);
+					border: 2px solid var(--primary-color);
+					border-radius: var(--border-radius);
+					padding: 0.5em;
+					cursor: pointer;
+					font-family: var(--header-font-family);
+					box-shadow: 2px 2px 0 var(--secondary-color), 4px 4px 0 #0002;
+					transition: var(--transition);
+					width: 6vw;
+					height: 6vw;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					z-index: 100;
+				}
+				
+				#home-button svg {
+					width: 80%;
+					height: 80%;
+					fill: currentColor;
+				}
+				
+				#home-button:hover {
+					background: var(--secondary-color);
+					color: #fff;
+					border-color: var(--secondary-color);
+					transform: translate(-2px, -2px);
+					box-shadow: 4px 4px 0 var(--primary-color), 8px 8px 0 #0003;
 				}
 				#code-editor {	
 					max-width: 45vw;
@@ -547,6 +582,11 @@ export class Editor extends HTMLElement {
 				}
 			</style>
 			<main>
+				<button id="home-button" title="Zurück zum Start">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+						<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+					</svg>
+				</button>
 				<div id="code-editor">
 				<div id="level-selector">
 					<button id="level1"><span class="star-icon">★</span></button>
@@ -653,6 +693,13 @@ export class Editor extends HTMLElement {
 			this.selectLevel(2);
 		});
 
+		// Home button event listener
+		this.shadow.getElementById('home-button').addEventListener('click', () => {
+			if (confirm('Möchtest du wirklich zurück zum Start?')) {
+				this.sendHome();
+			}
+		});
+
 		// Popover close button event listener
 		this.shadow.getElementById('popover-close').addEventListener('click', () => {
 			this.hidePopover();
@@ -670,8 +717,12 @@ export class Editor extends HTMLElement {
 
 		// Go back button event listener
 		this.shadow.getElementById('go-back').addEventListener('click', () => {
-			window.location.href = '/';
+			this.sendHome();
 		});
+	}
+
+	sendHome(){
+		window.location.href = '/';
 	}
 
 	showPopover() {
