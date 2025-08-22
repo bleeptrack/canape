@@ -98,7 +98,7 @@ app.post('/send-email', async (req, res) => {
   console.log('Processed code length:', processedCode.length);
 
   const mailOptions = {
-    from: 'info@canape.local',
+    from: 'hello@arkadia.hn',
     to: email,
     subject: `Dein Code von ${author} - Canape`,
     html: `
